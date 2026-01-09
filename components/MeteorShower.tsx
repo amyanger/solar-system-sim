@@ -1,13 +1,13 @@
 // components/MeteorShower.tsx
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 export default function MeteorShower({
-  count = 32,
+  count = 12,
   duration = 6,
-  radius = 120,
-  color = "#ff00ff",
+  radius = 60,
+  color = "#00ff00",
   onEnd
 }: {
   count?: number;
@@ -19,8 +19,13 @@ export default function MeteorShower({
   const group = useRef<THREE.Group>(null);
   const startTime = useRef<number>(0);
 
+  // Reset start time whenever this component is mounted
+  useEffect(() => {
+    startTime.current = 0;
+  }, []);
+
   const meteors = useMemo(() => {
-    return Array.from({ length: count }).map(() => {
+    return Array.from({ length: count }).map((_, idx) => {
       const phi = Math.acos(2 * Math.random() - 1);
       const theta = 2 * Math.PI * Math.random();
       const dir = new THREE.Vector3(
@@ -28,12 +33,17 @@ export default function MeteorShower({
         Math.sin(phi) * Math.sin(theta),
         Math.cos(phi)
       );
+      const start = dir.clone().multiplyScalar(radius + 20);
+      const end = dir.clone().multiplyScalar(radius - 10);
+      if (idx === 0) {
+        console.log("Meteor DEBUG start/end", start, end);
+      }
       return {
-        start: dir.clone().multiplyScalar(radius + 20),
-        end: dir.clone().multiplyScalar(radius - 10),
+        start,
+        end,
         delay: 0,
-        len: 30 + Math.random() * 30, // <-- wider range for better visibility
-        width: 2 + Math.random() * 2, // <-- much wider for debug
+        len: 60,
+        width: 8,
       };
     });
   }, [count, duration, radius]);
@@ -41,7 +51,10 @@ export default function MeteorShower({
   useFrame(({ clock }) => {
     if (!startTime.current) startTime.current = clock.getElapsedTime();
     const t = clock.getElapsedTime() - startTime.current;
-    if (t > duration && onEnd) onEnd();
+    if (t > duration && onEnd) {
+      onEnd();
+      // Unmount is handled by parent, do not set any local mounted state here!
+    }
   });
 
   return (
@@ -90,15 +103,14 @@ function MeteorStreak({
     if (mesh.current) {
       mesh.current.position.copy(pos);
       mesh.current.visible = progress > 0 && progress < 1;
-      // Opacity debugging: just show full opacity for now
-      // const material = mesh.current.material;
-      // if (Array.isArray(material)) {
-      //   material.forEach(mat => { if ("opacity" in mat) mat.opacity = 1; });
-      // } else if ("opacity" in material) {
-      //   material.opacity = 1;
-      // }
     }
   });
+
+  // Debug values for maximum visibility
+  const debugLen = 30;
+  const debugWidth = 3;
+  const debugColor = "#ff00ff";
+  const debugOpacity = 1;
 
   // Set orientation to point from start to end
   const direction = end.clone().sub(start).normalize();
@@ -107,8 +119,8 @@ function MeteorStreak({
 
   return (
     <mesh ref={mesh} quaternion={quaternion}>
-      <cylinderGeometry args={[width, 0.01, len, 5]} />
-      <meshBasicMaterial color={color} transparent opacity={1} />
+      <cylinderGeometry args={[debugWidth, 0.01, debugLen, 5]} />
+      <meshBasicMaterial color={debugColor} transparent opacity={debugOpacity} />
     </mesh>
   );
 }
