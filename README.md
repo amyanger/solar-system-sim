@@ -38,3 +38,16 @@ Open [http://localhost:3000](http://localhost:3000) to explore the solar system.
 - **Left Click + Drag:** Rotate view
 - **Scroll:** Zoom in/out
 - **Right Click + Drag:** Pan
+
+## Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
+
+## License
+
+MIT License
