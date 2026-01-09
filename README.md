@@ -48,6 +48,10 @@ npm run start    # Start production server
 npm run lint     # Run ESLint
 ```
 
+## Author
+
+Arjun Myanger - [GitHub](https://github.com/amyanger)
+
 ## License
 
 MIT License
